@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../SmartDiskCleaner.Domain/SmartDiskCleaner.Domain.csproj" />
+  </ItemGroup>
+</Project>
+

@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SmartDiskCleaner.Domain/SmartDiskCleaner.Domain.csproj" />
+    <Project Path="src/SmartDiskCleaner.Application/SmartDiskCleaner.Application.csproj" />
+    <Project Path="src/SmartDiskCleaner.Infrastructure/SmartDiskCleaner.Infrastructure.csproj" />
+    <Project Path="src/SmartDiskCleaner.Rules/SmartDiskCleaner.Rules.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartDiskCleaner.Domain.Tests/SmartDiskCleaner.Domain.Tests.csproj" />
+    <Project Path="tests/SmartDiskCleaner.Infrastructure.Tests/SmartDiskCleaner.Infrastructure.Tests.csproj" />
+    <Project Path="tests/SmartDiskCleaner.Application.Tests/SmartDiskCleaner.Application.Tests.csproj" />
+    <Project Path="tests/SmartDiskCleaner.IntegrationTests/SmartDiskCleaner.IntegrationTests.csproj" />
+  </Folder>
+</Solution>
+
