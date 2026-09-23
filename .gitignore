@@ -5,4 +5,5 @@ TestResults/
 *.user
 *.suo
 artifacts/
+dist/
 
