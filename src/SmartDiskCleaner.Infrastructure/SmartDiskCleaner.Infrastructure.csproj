@@ -5,4 +5,7 @@
   <ItemGroup>
     <ProjectReference Include="../SmartDiskCleaner.Domain/SmartDiskCleaner.Domain.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" />
+  </ItemGroup>
 </Project>

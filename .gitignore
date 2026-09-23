@@ -4,4 +4,5 @@ obj/
 TestResults/
 *.user
 *.suo
+artifacts/
 

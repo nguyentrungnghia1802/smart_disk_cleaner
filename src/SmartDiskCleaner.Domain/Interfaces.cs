@@ -56,3 +56,33 @@ public sealed class RootAccessException(string message, Exception? innerExceptio
     : ScanValidationException("ROOT_ACCESS_FAILED", message, innerException);
 
 public sealed class SnapshotInvariantException(string message) : Exception(message);
+
+public interface IScanSnapshotRepository
+{
+    Task SaveSnapshotAsync(ScanSnapshot snapshot, CancellationToken cancellationToken = default);
+    Task<ScanSnapshot?> LoadSnapshotAsync(Guid sessionId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ScanSession>> GetRecentSessionsAsync(int maxCount = 20, CancellationToken cancellationToken = default);
+    Task<bool> RemoveSessionAsync(Guid sessionId, CancellationToken cancellationToken = default);
+}
+
+public interface IAppLogger
+{
+    void LogInformation(string operation, string message, Guid? sessionId = null);
+    void LogWarning(string operation, string message, string? path = null, Guid? sessionId = null);
+    void LogError(string operation, string message, Exception? exception = null, Guid? sessionId = null);
+}
+
+public sealed record AppConfig(
+    string Version = "1",
+    string SelectedDrive = "C:\\",
+    int MaxRecentSnapshots = 10,
+    int ChildThreshold = 10,
+    double LargestFolderRatio = 0.40,
+    long MinSizeFilterBytes = 0);
+
+public interface IAppConfigService
+{
+    AppConfig Current { get; }
+    Task LoadAsync(CancellationToken cancellationToken = default);
+    Task SaveAsync(AppConfig config, CancellationToken cancellationToken = default);
+}

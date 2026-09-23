@@ -1,0 +1,519 @@
+<Window x:Class="SmartDiskCleaner.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:SmartDiskCleaner.App.Converters"
+        xmlns:vm="clr-namespace:SmartDiskCleaner.App.ViewModels"
+        xmlns:app="clr-namespace:SmartDiskCleaner.Application;assembly=SmartDiskCleaner.Application"
+        mc:Ignorable="d"
+        Title="Smart Disk Cleaner Analyzer — Read-Only Disk Review"
+        Height="800" Width="1200" MinHeight="650" MinWidth="950"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource PrimaryBackground}">
+
+    <Window.Resources>
+        <converters:ByteSizeConverter x:Key="ByteSizeConverter"/>
+        <converters:CategoryToBrushConverter x:Key="CategoryToBrushConverter"/>
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <Style x:Key="HeaderCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <Style x:Key="StatCard" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrushColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="BadgeStyle" TargetType="Border">
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Margin" Value="4,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Top Action Bar -->
+            <RowDefinition Height="Auto"/> <!-- Progress Banner -->
+            <RowDefinition Height="*"/>    <!-- Main Content -->
+            <RowDefinition Height="Auto"/> <!-- Bottom Status Bar -->
+        </Grid.RowDefinitions>
+
+        <!-- 1. Top Action Bar -->
+        <Border Grid.Row="0" Background="#FFFFFF" BorderBrush="{StaticResource BorderBrushColor}" BorderThickness="0,0,0,1" Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/> <!-- Title / Drive selector -->
+                    <ColumnDefinition Width="*"/>    <!-- Center Actions & Banners -->
+                    <ColumnDefinition Width="Auto"/> <!-- Export actions -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Drive Selector & Scan Button -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Target Drive:" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,0,8,0"/>
+                    <ComboBox ItemsSource="{Binding DriveSelector.AvailableDrives}"
+                              SelectedItem="{Binding DriveSelector.SelectedDrive}"
+                              DisplayMemberPath="DisplayText"
+                              IsEnabled="{Binding CanChangeDrive}"
+                              MinWidth="220" Height="30" Margin="0,0,8,0" VerticalContentAlignment="Center"/>
+
+                    <Button Content="▶ Start Scan"
+                            Command="{Binding StartScanCommand}"
+                            Background="{StaticResource AccentColor}" Foreground="White"
+                            FontWeight="SemiBold" Height="30" Margin="0,0,6,0"
+                            Padding="14,4"/>
+
+                    <Button Content="⏹ Cancel"
+                            Command="{Binding CancelScanCommand}"
+                            Background="{StaticResource DangerColor}" Foreground="White"
+                            Height="30" Margin="0,0,6,0"
+                            Padding="12,4"/>
+                </StackPanel>
+
+                <!-- Historical indicator / Messages -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Border Background="#FFF3E0" BorderBrush="#FFE0B2" BorderThickness="1" CornerRadius="4" Padding="10,4"
+                            Visibility="{Binding RecentSnapshots.IsHistoricalLoaded, Converter={StaticResource BoolToVis}}">
+                        <TextBlock Text="{Binding RecentSnapshots.HistoricalInfoText}" Foreground="#E65100" FontWeight="SemiBold"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Export Actions -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="Export:" VerticalAlignment="Center" Margin="0,0,6,0" Foreground="{StaticResource SecondaryTextColor}"/>
+                    <Button Content="Export CSV" Command="{Binding ExportCsvCommand}" Height="30" Margin="0,0,4,0"/>
+                    <Button Content="Export JSON" Command="{Binding ExportJsonCommand}" Height="30"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- 2. Scan Progress Banner -->
+        <Border Grid.Row="1" Background="#E8EAF6" BorderBrush="#C5CAE9" BorderThickness="0,0,0,1" Padding="14,10"
+                Visibility="{Binding Progress.IsActive, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Progress.StageText}" FontWeight="Bold" Foreground="#1A237E" FontSize="14"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Progress.ElapsedTimeText, StringFormat='Elapsed: {0}'}" FontWeight="SemiBold" Foreground="#3949AB"/>
+                </Grid>
+
+                <ProgressBar Grid.Row="1" IsIndeterminate="True" Height="6" Margin="0,6,0,6"/>
+
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Progress.CurrentPath, StringFormat='Path: {0}'}"
+                               TextTrimming="CharacterEllipsis" Foreground="{StaticResource SecondaryTextColor}" FontSize="12"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <TextBlock Text="{Binding Progress.DiscoveredNodes, StringFormat='Items: {0:N0}'}" Margin="0,0,12,0" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Progress.WarningCount, StringFormat='Warnings: {0:N0}'}" Foreground="#D32F2F" FontWeight="SemiBold"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- 3. Main Content Split View -->
+        <Grid Grid.Row="2" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" MinWidth="350"/>
+                <ColumnDefinition Width="5"/>
+                <ColumnDefinition Width="2*" MinWidth="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Panel: Tabs for Tree, Search, Warnings, Snapshots -->
+            <TabControl Grid.Column="0" Background="{StaticResource CardBackground}" BorderBrush="{StaticResource BorderBrushColor}">
+                <!-- Tab 1: Folder Tree -->
+                <TabItem Header="  📁 Folder Tree  ">
+                    <TreeView ItemsSource="{Binding RootNodes}"
+                              VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling"
+                              BorderThickness="0" Margin="4">
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                <StackPanel Orientation="Horizontal" Margin="2,3">
+                                    <!-- Node Type Icon -->
+                                    <TextBlock Text="{Binding NodeType, Converter={StaticResource CategoryToBrushConverter}}" Visibility="Collapsed"/>
+                                    <TextBlock Text="📁 " FontSize="14" Visibility="{Binding HasChildren, Converter={StaticResource BoolToVis}}"/>
+                                    <TextBlock Text="📄 " FontSize="14" Visibility="{Binding HasChildren, Converter={StaticResource BoolToVis}, ConverterParameter=invert}"/>
+
+                                    <!-- Name -->
+                                    <TextBlock Text="{Binding DisplayName}" FontWeight="Medium" VerticalAlignment="Center"/>
+
+                                    <!-- Badge (Accessible Text + Color) -->
+                                    <Border Background="#ECEFF1" BorderBrush="#CFD8DC" BorderThickness="1" CornerRadius="3"
+                                            Padding="4,1" Margin="6,0" VerticalAlignment="Center"
+                                            Visibility="{Binding HasBadge, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="{Binding BadgeText}" FontSize="11" FontWeight="SemiBold" Foreground="#37474F"/>
+                                    </Border>
+
+                                    <!-- Size -->
+                                    <TextBlock Text="{Binding DisplaySize}" Foreground="{StaticResource SecondaryTextColor}"
+                                               FontSize="12" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                                </StackPanel>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                                <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}"/>
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                    </TreeView>
+                </TabItem>
+
+                <!-- Tab 2: Search & Filter -->
+                <TabItem Header="  🔍 Search &amp; Filter  ">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/> <!-- Filters -->
+                            <RowDefinition Height="*"/>    <!-- Results List -->
+                        </Grid.RowDefinitions>
+
+                        <!-- Filter Controls -->
+                        <Border Grid.Row="0" Background="#F5F5F5" BorderBrush="{StaticResource BorderBrushColor}" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Row 1: Search text & Category -->
+                                <Grid Grid.Row="0" Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="2*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Text="{Binding Search.SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                             Height="26" Margin="0,0,6,0" VerticalContentAlignment="Center"
+                                             ToolTip="Search by filename or path"/>
+
+                                    <ComboBox Grid.Column="1" SelectedValue="{Binding Search.SelectedCategory}"
+                                              SelectedValuePath="Tag" Height="26" Margin="0,0,6,0">
+                                        <ComboBoxItem Content="All Categories" Tag="All"/>
+                                        <ComboBoxItem Content="Reclaimable" Tag="HighConfidenceReclaimable"/>
+                                        <ComboBoxItem Content="Review" Tag="ReviewRecommended"/>
+                                        <ComboBoxItem Content="Large Files" Tag="LargeFileNotJunk"/>
+                                        <ComboBoxItem Content="Protected" Tag="Protected"/>
+                                        <ComboBoxItem Content="Unknown" Tag="Unknown"/>
+                                    </ComboBox>
+
+                                    <ComboBox Grid.Column="2" SelectedValue="{Binding Search.SelectedSort}"
+                                              SelectedValuePath="Tag" Height="26">
+                                        <ComboBoxItem Content="Size Descending" Tag="{x:Static app:SearchSortOption.SizeDescending}"/>
+                                        <ComboBoxItem Content="Size Ascending" Tag="{x:Static app:SearchSortOption.SizeAscending}"/>
+                                        <ComboBoxItem Content="Name (A-Z)" Tag="{x:Static app:SearchSortOption.NameAscending}"/>
+                                        <ComboBoxItem Content="Path (A-Z)" Tag="{x:Static app:SearchSortOption.PathAscending}"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <!-- Row 2: Checkboxes for fast filters -->
+                                <WrapPanel Grid.Row="1" Margin="0,0,0,6">
+                                    <CheckBox Content="Protected Only" IsChecked="{Binding Search.ProtectedOnly}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <CheckBox Content="Reparse Points" IsChecked="{Binding Search.ReparseOnly}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <CheckBox Content="Inaccessible" IsChecked="{Binding Search.InaccessibleOnly}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <CheckBox Content="Large Files" IsChecked="{Binding Search.LargeFileOnly}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <StackPanel Orientation="Horizontal" Margin="6,0,0,0">
+                                        <TextBlock Text="Min MB: " VerticalAlignment="Center"/>
+                                        <TextBox Text="{Binding Search.MinSizeMb, UpdateSourceTrigger=PropertyChanged}" Width="50" Height="22" VerticalContentAlignment="Center"/>
+                                    </StackPanel>
+                                </WrapPanel>
+
+                                <!-- Row 3: Buttons & Count -->
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Search.ResultCountText}" Foreground="{StaticResource SecondaryTextColor}" VerticalAlignment="Center" FontWeight="SemiBold"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button Content="Clear" Command="{Binding Search.ClearFiltersCommand}" Margin="0,0,6,0" Padding="10,3"/>
+                                        <Button Content="Search" Command="{Binding Search.SearchCommand}" Background="{StaticResource AccentColor}" Foreground="White" Padding="14,3"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Border>
+
+                        <!-- Results List -->
+                        <ListView Grid.Row="1" ItemsSource="{Binding Search.SearchResults}"
+                                  SelectedItem="{Binding Search.SelectedResult}"
+                                  BorderThickness="1" BorderBrush="{StaticResource BorderBrushColor}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Name" Width="180" DisplayMemberBinding="{Binding Name}"/>
+                                    <GridViewColumn Header="Type" Width="60" DisplayMemberBinding="{Binding NodeType}"/>
+                                    <GridViewColumn Header="Size" Width="80" DisplayMemberBinding="{Binding RecursiveUniqueAllocatedBytes, Converter={StaticResource ByteSizeConverter}}"/>
+                                    <GridViewColumn Header="Category" Width="130" DisplayMemberBinding="{Binding Classification.Category}"/>
+                                    <GridViewColumn Header="Risk" Width="70" DisplayMemberBinding="{Binding Classification.Risk}"/>
+                                    <GridViewColumn Header="Full Path" Width="300" DisplayMemberBinding="{Binding FullPath}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </TabItem>
+
+                <!-- Tab 3: Scan Warnings -->
+                <TabItem Header="  ⚠️ Warnings  ">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="{Binding Warnings.SummaryText}" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                        <ListView Grid.Row="1" ItemsSource="{Binding Warnings.Warnings}"
+                                  BorderThickness="1" BorderBrush="{StaticResource BorderBrushColor}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Severity" Width="70" DisplayMemberBinding="{Binding Severity}"/>
+                                    <GridViewColumn Header="Code" Width="120" DisplayMemberBinding="{Binding Code}"/>
+                                    <GridViewColumn Header="Operation" Width="90" DisplayMemberBinding="{Binding Operation}"/>
+                                    <GridViewColumn Header="Path" Width="300" DisplayMemberBinding="{Binding Path}"/>
+                                    <GridViewColumn Header="Message" Width="350" DisplayMemberBinding="{Binding MessageSafe}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </TabItem>
+
+                <!-- Tab 4: Recent Snapshots -->
+                <TabItem Header="  🕒 Recent Snapshots  ">
+                    <Grid Margin="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                            <Button Content="Open Selected Snapshot" Command="{Binding RecentSnapshots.OpenSnapshotCommand}" Background="{StaticResource AccentColor}" Foreground="White" Margin="0,0,6,0"/>
+                            <Button Content="Delete from Database" Command="{Binding RecentSnapshots.DeleteSnapshotCommand}" Margin="0,0,6,0"/>
+                            <Button Content="Refresh" Command="{Binding RecentSnapshots.LoadRecentCommand}"/>
+                            <TextBlock Text="{Binding RecentSnapshots.StatusMessage}" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="{StaticResource SecondaryTextColor}"/>
+                        </StackPanel>
+                        <ListView Grid.Row="1" ItemsSource="{Binding RecentSnapshots.RecentSessions}"
+                                  SelectedItem="{Binding RecentSnapshots.SelectedSession}"
+                                  BorderThickness="1" BorderBrush="{StaticResource BorderBrushColor}">
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Volume" Width="80" DisplayMemberBinding="{Binding VolumeRoot}"/>
+                                    <GridViewColumn Header="Volume ID" Width="100" DisplayMemberBinding="{Binding VolumeIdentity}"/>
+                                    <GridViewColumn Header="Scan Date (UTC)" Width="150" DisplayMemberBinding="{Binding StartedAtUtc, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}"/>
+                                    <GridViewColumn Header="Status" Width="90" DisplayMemberBinding="{Binding Status}"/>
+                                    <GridViewColumn Header="Options" Width="70" DisplayMemberBinding="{Binding OptionsVersion}"/>
+                                    <GridViewColumn Header="Ruleset" Width="90" DisplayMemberBinding="{Binding RuleSetVersion}"/>
+                                    <GridViewColumn Header="Session ID" Width="260" DisplayMemberBinding="{Binding Id}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <!-- Splitter -->
+            <GridSplitter Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="#E0E0E0"/>
+
+            <!-- Right Panel: Summary & Node Details -->
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Scan Summary Card -->
+                <Border Grid.Row="0" Style="{StaticResource HeaderCard}" Margin="0,0,0,10">
+                    <StackPanel>
+                        <TextBlock Text="📊 Storage Accounting Summary" FontWeight="Bold" FontSize="15" Margin="0,0,0,8"/>
+
+                        <!-- Metrics Grid -->
+                        <Grid Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="Scanned Volume:" Foreground="{StaticResource SecondaryTextColor}" FontSize="11"/>
+                                <TextBlock Text="{Binding Summary.VolumeRoot}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Total Scanned (Logical):" Foreground="{StaticResource SecondaryTextColor}" FontSize="11" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding Summary.TotalLogicalSize}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Duration:" Foreground="{StaticResource SecondaryTextColor}" FontSize="11"/>
+                                <TextBlock Text="{Binding Summary.ScanDuration}" FontWeight="SemiBold"/>
+                                <TextBlock Text="Total Scanned (Allocated):" Foreground="{StaticResource SecondaryTextColor}" FontSize="11" Margin="0,4,0,0"/>
+                                <TextBlock Text="{Binding Summary.TotalUniqueAllocatedSize}" FontWeight="SemiBold"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="Accounting Confidence:" Foreground="{StaticResource SecondaryTextColor}" FontSize="11"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,2,0,8">
+                            <Border Background="#E8F5E9" BorderBrush="#A5D6A7" BorderThickness="1" CornerRadius="3" Padding="4,1" Margin="0,0,6,0">
+                                <TextBlock Text="{Binding Summary.ConfidenceBadge}" FontWeight="Bold" Foreground="#2E7D32" FontSize="11"/>
+                            </Border>
+                            <TextBlock Text="{Binding Summary.AccountingConfidenceText}" FontWeight="Medium" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <!-- Category Breakdown Cards -->
+                        <TextBlock Text="Categories Overview:" FontWeight="SemiBold" FontSize="12" Margin="0,4,0,4"/>
+                        <Grid Margin="0,0,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                <Border Background="#F1F8E9" BorderBrush="#C5E1A5" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,4">
+                                    <StackPanel>
+                                        <TextBlock Text="♻️ Reclaimable" FontWeight="SemiBold" Foreground="#2E7D32" FontSize="11"/>
+                                        <TextBlock Text="{Binding Summary.ReclaimableSize}" FontWeight="Bold" FontSize="13"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Background="#FFF8E1" BorderBrush="#FFE082" BorderThickness="1" CornerRadius="4" Padding="6">
+                                    <StackPanel>
+                                        <TextBlock Text="⚠️ Review Rec." FontWeight="SemiBold" Foreground="#E65100" FontSize="11"/>
+                                        <TextBlock Text="{Binding Summary.ReviewRecommendedSize}" FontWeight="Bold" FontSize="13"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                                <Border Background="#E3F2FD" BorderBrush="#90CAF9" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,4">
+                                    <StackPanel>
+                                        <TextBlock Text="📦 Large (Not Junk)" FontWeight="SemiBold" Foreground="#1565C0" FontSize="11"/>
+                                        <TextBlock Text="{Binding Summary.LargeFileSize}" FontWeight="Bold" FontSize="13"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Background="#F3E5F5" BorderBrush="#CE93D8" BorderThickness="1" CornerRadius="4" Padding="6">
+                                    <StackPanel>
+                                        <TextBlock Text="🛡️ Protected" FontWeight="SemiBold" Foreground="#6A1B9A" FontSize="11"/>
+                                        <TextBlock Text="{Binding Summary.ProtectedSize}" FontWeight="Bold" FontSize="13"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Read-only notice -->
+                        <Border Background="#ECEFF1" BorderBrush="#CFD8DC" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,4,0,0">
+                            <TextBlock Text="ℹ️ Read-Only: Smart Disk Cleaner never automatically deletes or mutates files."
+                                       FontSize="11" Foreground="#455A64" TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <!-- Node Details Card -->
+                <Border Grid.Row="1" Style="{StaticResource HeaderCard}">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+                            <TextBlock Text="🔍 Item Details" FontWeight="Bold" FontSize="15" Margin="0,0,0,8"/>
+
+                            <!-- Path & Actions -->
+                            <TextBlock Text="Full Path:" Foreground="{StaticResource SecondaryTextColor}" FontSize="11"/>
+                            <TextBox Text="{Binding Details.PathText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                     Background="#F9F9F9" Margin="0,2,0,6" Padding="4"/>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                <Button Content="📋 Copy Path" Command="{Binding Details.CopyPathCommand}" Margin="0,0,6,0" Padding="8,4"/>
+                                <Button Content="📂 Open in Explorer" Command="{Binding Details.OpenInExplorerCommand}" Padding="8,4"/>
+                            </StackPanel>
+
+                            <!-- Notification banner for Explorer/Copy -->
+                            <Border Background="#E0F7FA" BorderBrush="#80DEEA" BorderThickness="1" CornerRadius="4" Padding="6" Margin="0,0,0,8"
+                                    Visibility="{Binding Details.HasNotification, Converter={StaticResource BoolToVis}}">
+                                <TextBlock Text="{Binding Details.NotificationMessage}" Foreground="#006064" FontSize="11" FontWeight="Medium"/>
+                            </Border>
+
+                            <!-- Details Table -->
+                            <Grid Margin="0,0,0,8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Item Type:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Details.TypeText}" FontWeight="SemiBold" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Logical Size:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Details.LogicalSizeText}" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Allocated Size:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Details.AllocatedSizeText}" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Unique Allocated:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Details.UniqueAllocatedSizeText}" FontWeight="SemiBold" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Category:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Details.CategoryText}" FontWeight="Bold" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="5" Grid.Column="0" Text="Risk / Confidence:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Margin="0,2">
+                                    <Run Text="{Binding Details.RiskText, Mode=OneWay}" FontWeight="SemiBold"/>
+                                    <Run Text=" / "/>
+                                    <Run Text="{Binding Details.ConfidenceText, Mode=OneWay}"/>
+                                </TextBlock>
+
+                                <TextBlock Grid.Row="6" Grid.Column="0" Text="Primary Reason:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding Details.PrimaryReasonText}" TextWrapping="Wrap" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="7" Grid.Column="0" Text="Matched Rules:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Details.MatchedRulesText}" TextWrapping="Wrap" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="8" Grid.Column="0" Text="Modified Date:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Details.ModifiedText}" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="9" Grid.Column="0" Text="Attributes:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="9" Grid.Column="1" Text="{Binding Details.AttributesText}" Margin="0,2"/>
+
+                                <TextBlock Grid.Row="10" Grid.Column="0" Text="Physical ID:" Foreground="{StaticResource SecondaryTextColor}" Margin="0,2,8,2"/>
+                                <TextBlock Grid.Row="10" Grid.Column="1" Text="{Binding Details.PhysicalIdentityText}" TextTrimming="CharacterEllipsis" Margin="0,2"/>
+                            </Grid>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <!-- 4. Bottom Status Bar -->
+        <Border Grid.Row="3" Background="#F5F5F5" BorderBrush="{StaticResource BorderBrushColor}" BorderThickness="0,1,0,0" Padding="8,4">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding StatusText}" Foreground="{StaticResource SecondaryTextColor}" FontSize="12"/>
+                <TextBlock Grid.Column="1" Text="{Binding ErrorMessage}" Foreground="#D32F2F" FontWeight="Bold" FontSize="12"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -4,12 +4,14 @@
     <Project Path="src/SmartDiskCleaner.Application/SmartDiskCleaner.Application.csproj" />
     <Project Path="src/SmartDiskCleaner.Infrastructure/SmartDiskCleaner.Infrastructure.csproj" />
     <Project Path="src/SmartDiskCleaner.Rules/SmartDiskCleaner.Rules.csproj" />
+    <Project Path="src/SmartDiskCleaner.App/SmartDiskCleaner.App.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SmartDiskCleaner.Domain.Tests/SmartDiskCleaner.Domain.Tests.csproj" />
     <Project Path="tests/SmartDiskCleaner.Infrastructure.Tests/SmartDiskCleaner.Infrastructure.Tests.csproj" />
     <Project Path="tests/SmartDiskCleaner.Application.Tests/SmartDiskCleaner.Application.Tests.csproj" />
     <Project Path="tests/SmartDiskCleaner.IntegrationTests/SmartDiskCleaner.IntegrationTests.csproj" />
+    <Project Path="tests/SmartDiskCleaner.App.Tests/SmartDiskCleaner.App.Tests.csproj" />
   </Folder>
 </Solution>
 

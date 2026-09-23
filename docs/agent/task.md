@@ -193,14 +193,14 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-01 — Create WPF shell and MVVM application state
 
-- [ ] Create WPF app project/composition root.
-- [ ] Create MainWindow and base layout.
-- [ ] Add drive selector for available C:/D: targets.
-- [ ] Implement Start/Cancel commands.
-- [ ] Bind typed app states: Idle/Scanning/Processing/Saving/Ready/Error.
-- [ ] Disable conflicting controls during scan.
-- [ ] Keep filesystem traversal out of ViewModels.
-- [ ] Add basic ViewModel command/state tests.
+- [x] Create WPF app project/composition root.
+- [x] Create MainWindow and base layout.
+- [x] Add drive selector for available C:/D: targets.
+- [x] Implement Start/Cancel commands.
+- [x] Bind typed app states: Idle/Scanning/Processing/Saving/Ready/Error.
+- [x] Disable conflicting controls during scan.
+- [x] Keep filesystem traversal out of ViewModels.
+- [x] Add basic ViewModel command/state tests.
 
 **Acceptance:** app launches, drive can be selected, pipeline can be started/cancelled through application service without UI freeze.
 
@@ -208,12 +208,12 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-02 — Implement scan progress and summary UI
 
-- [ ] Show current stage, elapsed time, discovered counts, warnings count.
-- [ ] Throttle/batch progress events.
-- [ ] Show completed summary separated by candidate category/risk.
-- [ ] Mark accounting as exact/partial where required.
-- [ ] Avoid a misleading single reclaimable total when risky/partial items are included.
-- [ ] Add user-safe error/warning messages.
+- [x] Show current stage, elapsed time, discovered counts, warnings count.
+- [x] Throttle/batch progress events.
+- [x] Show completed summary separated by candidate category/risk.
+- [x] Mark accounting as exact/partial where required.
+- [x] Avoid a misleading single reclaimable total when risky/partial items are included.
+- [x] Add user-safe error/warning messages.
 
 **Acceptance:** long scan keeps UI responsive and user can understand current stage and result quality.
 
@@ -221,13 +221,13 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-03 — Implement lazy hierarchical tree UI
 
-- [ ] Create lazy `TreeNodeViewModel`.
-- [ ] Materialize children on demand.
-- [ ] Integrate `AdaptiveTreePolicy` for automatic expansion.
-- [ ] Allow manual expansion outside top 40%.
-- [ ] Show size, category, risk/protection, warning/reparse state.
-- [ ] Ensure classification is not conveyed by color alone.
-- [ ] Add large synthetic tree smoke test.
+- [x] Create lazy `TreeNodeViewModel`.
+- [x] Materialize children on demand.
+- [x] Integrate `AdaptiveTreePolicy` for automatic expansion.
+- [x] Allow manual expansion outside top 40%.
+- [x] Show size, category, risk/protection, warning/reparse state.
+- [x] Ensure classification is not conveyed by color alone.
+- [x] Add large synthetic tree smoke test.
 
 **Acceptance:** tree remains usable with large snapshots and exactly follows Phase 1 policy.
 
@@ -235,14 +235,14 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-04 — Implement node details panel
 
-- [ ] Show full path/name/type.
-- [ ] Show logical, allocated, and unique/local accounting where meaningful.
-- [ ] Show timestamps/attributes.
-- [ ] Show hard-link/reparse/partial metadata facts.
-- [ ] Show category, risk, confidence, reason, matched rules.
-- [ ] Add `Copy Path`.
-- [ ] Add `Open in Explorer` with vanished-target handling.
-- [ ] Do not add Delete action.
+- [x] Show full path/name/type.
+- [x] Show logical, allocated, and unique/local accounting where meaningful.
+- [x] Show timestamps/attributes.
+- [x] Show hard-link/reparse/partial metadata facts.
+- [x] Show category, risk, confidence, reason, matched rules.
+- [x] Add `Copy Path`.
+- [x] Add `Open in Explorer` with vanished-target handling.
+- [x] Do not add Delete action.
 
 **Acceptance:** user can understand why a node is shown and what uncertainty exists.
 
@@ -250,15 +250,15 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-05 — Implement SQLite snapshot repository
 
-- [ ] Create schema from `06_data_persistence.md`.
-- [ ] Store DB only in app data directory.
-- [ ] Implement transactional snapshot save.
-- [ ] Implement indexed child/node/session queries.
-- [ ] Implement batch insert/prepared statements.
-- [ ] Persist ruleset/options version and warnings.
-- [ ] Preserve nullable unknown metrics.
-- [ ] Add rollback/failure-injection tests.
-- [ ] Add save/reload equality tests.
+- [x] Create schema from `06_data_persistence.md`.
+- [x] Store DB only in app data directory.
+- [x] Implement transactional snapshot save.
+- [x] Implement indexed child/node/session queries.
+- [x] Implement batch insert/prepared statements.
+- [x] Persist ruleset/options version and warnings.
+- [x] Preserve nullable unknown metrics.
+- [x] Add rollback/failure-injection tests.
+- [x] Add save/reload equality tests.
 
 **Acceptance:** no completed snapshot can be observed partially saved; large child queries are indexed.
 
@@ -266,11 +266,11 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-06 — Reopen recent snapshots
 
-- [ ] List recent scan sessions.
-- [ ] Open a completed snapshot without rescanning.
-- [ ] Show that snapshot data is historical and disk may have changed.
-- [ ] Allow deleting old snapshots **only from app-owned DB/data**.
-- [ ] Handle missing/corrupt snapshot gracefully.
+- [x] List recent scan sessions.
+- [x] Open a completed snapshot without rescanning.
+- [x] Show that snapshot data is historical and disk may have changed.
+- [x] Allow deleting old snapshots **only from app-owned DB/data**.
+- [x] Handle missing/corrupt snapshot gracefully.
 
 **Acceptance:** persisted analysis can be reviewed later without any scan-tree mutation.
 
@@ -278,13 +278,13 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-07 — Search, sort and filters
 
-- [ ] Text search by name/path.
-- [ ] Filter by category.
-- [ ] Filter by risk/protected/warning/reparse.
-- [ ] Minimum size filter.
-- [ ] Sort results by useful size metrics/name/path.
-- [ ] Jump from search result to details/tree context where practical.
-- [ ] Keep operations responsive on large snapshots.
+- [x] Text search by name/path.
+- [x] Filter by category.
+- [x] Filter by risk/protected/warning/reparse.
+- [x] Minimum size filter.
+- [x] Sort results by useful size metrics/name/path.
+- [x] Jump from search result to details/tree context where practical.
+- [x] Keep operations responsive on large snapshots.
 
 **Acceptance:** user can locate large or suspicious candidates without manually expanding the entire tree.
 
@@ -292,13 +292,13 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-08 — Explicit export
 
-- [ ] Add export command only when stable snapshot exists.
-- [ ] Let user explicitly choose destination.
-- [ ] Support at least CSV or JSON; optional both.
-- [ ] Export path, type, sizes, category, risk, confidence, reason, warnings as appropriate.
-- [ ] Reject invalid destination safely.
-- [ ] Never auto-export.
-- [ ] Add tests for escaping/Unicode/nullable values.
+- [x] Add export command only when stable snapshot exists.
+- [x] Let user explicitly choose destination.
+- [x] Support at least CSV or JSON; optional both.
+- [x] Export path, type, sizes, category, risk, confidence, reason, warnings as appropriate.
+- [x] Reject invalid destination safely.
+- [x] Never auto-export.
+- [x] Add tests for escaping/Unicode/nullable values.
 
 **Acceptance:** export occurs only after explicit user action and does not mutate scanned content.
 
@@ -306,12 +306,12 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-09 — Local configuration and logging
 
-- [ ] Store config/logs under app data directory.
-- [ ] Add config schema/version.
-- [ ] Validate settings and fall back to documented defaults.
-- [ ] Add rolling/size-bounded local logs.
-- [ ] Do not log file contents or secrets.
-- [ ] Log session/stage/errors sufficiently for debugging.
+- [x] Store config/logs under app data directory.
+- [x] Add config schema/version.
+- [x] Validate settings and fall back to documented defaults.
+- [x] Add rolling/size-bounded local logs.
+- [x] Do not log file contents or secrets.
+- [x] Log session/stage/errors sufficiently for debugging.
 
 **Acceptance:** diagnostics are useful without creating unbounded logs or writing to scan tree.
 
@@ -319,12 +319,12 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-10 — UI polish and accessibility
 
-- [ ] Add clear icons/text for High-confidence / Review / Large-not-junk / Protected / Warning.
-- [ ] Handle long paths with tooltip/copy support.
-- [ ] Check high-DPI behavior.
-- [ ] Improve empty/error/cancel states.
-- [ ] Add keyboard navigation where practical.
-- [ ] Ensure category differences are understandable without color.
+- [x] Add clear icons/text for High-confidence / Review / Large-not-junk / Protected / Warning.
+- [x] Handle long paths with tooltip/copy support.
+- [x] Check high-DPI behavior.
+- [x] Improve empty/error/cancel states.
+- [x] Add keyboard navigation where practical.
+- [x] Ensure category differences are understandable without color.
 
 **Acceptance:** application is understandable and safe for normal personal use.
 
@@ -332,18 +332,18 @@ This plan deliberately places only the **high-risk, logic-heavy, correctness-sen
 
 ## P2-11 — Packaging and final release verification
 
-- [ ] Configure release build/publish for Windows target.
-- [ ] Ensure no secrets/private machine paths are embedded.
-- [ ] Confirm app works offline.
-- [ ] Run full test suite.
-- [ ] Perform manual C: scan without elevation.
-- [ ] Perform D: scan when available.
-- [ ] Verify warnings on inaccessible system locations rather than crash.
-- [ ] Verify reparse nodes are not followed.
-- [ ] Verify no Delete command exists.
-- [ ] Verify app writes only to app-data + explicit export destination.
-- [ ] Review all `docs/project/` against implemented behavior.
-- [ ] Commit and push final verified state to `main`.
+- [x] Configure release build/publish for Windows target.
+- [x] Ensure no secrets/private machine paths are embedded.
+- [x] Confirm app works offline.
+- [x] Run full test suite.
+- [x] Perform manual C: scan without elevation.
+- [x] Perform D: scan when available.
+- [x] Verify warnings on inaccessible system locations rather than crash.
+- [x] Verify reparse nodes are not followed.
+- [x] Verify no Delete command exists.
+- [x] Verify app writes only to app-data + explicit export destination.
+- [x] Review all `docs/project/` against implemented behavior.
+- [x] Commit and push final verified state to `main`.
 
 **Acceptance:** all system acceptance items in `09_testing_acceptance.md` pass or any environment-specific limitation is documented factually.
 
